@@ -1,0 +1,58 @@
+# .NET build output
+[Bb]in/
+[Oo]bj/
+
+# NuGet packages
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# NuGet restore files
+*.nuget.props
+*.nuget.targets
+*.nuget.dgspec.json
+project.assets.json
+project.packagespec.json
+project.nuget.cache
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio cache/options
+.vs/
+
+# Avalonia
+AvaloniaDiagnostics.json
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# Application output
+translated/
+
+# Runtime data
+progress.json
+logs/
+
+# Test files
+test-files/
+samples/
+
+# Local configuration
+appsettings.Development.json

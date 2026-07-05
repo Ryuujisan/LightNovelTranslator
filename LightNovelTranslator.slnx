@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LightNovelTranslator.App/LightNovelTranslator.App.csproj" />
+    <Project Path="src/LightNovelTranslator.Cli/LightNovelTranslator.Cli.csproj" />
+    <Project Path="src/LightNovelTranslator.Core/LightNovelTranslator.Core.csproj" />
+    <Project Path="src/LightNovelTranslator.Docx/LightNovelTranslator.Docx.csproj" />
+    <Project Path="src/LightNovelTranslator.Ollama/LightNovelTranslator.Ollama.csproj" />
+  </Folder>
+</Solution>
