@@ -42,24 +42,46 @@ public class OllamaTranslator : ITranslator
                 RepeatPenalty = 1.0,
             }
         };
-        
-        
-        
-        var response = await _httpClient.PostAsJsonAsync(
-            "http://localhost:11434/api/generate",
-            request);
+        const int maxRetries = 5;
 
-        if (!response.IsSuccessStatusCode)
+        for (var attempt = 1; attempt <= maxRetries; attempt++)
         {
-            var error = await response.Content.ReadAsStringAsync();
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync(
+                    "http://localhost:11434/api/generate",
+                    request);
 
-            throw new HttpRequestException(
-                $"Ollama error {(int)response.StatusCode}: {error}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error =
+                        await response.Content.ReadAsStringAsync();
+
+                    throw new HttpRequestException(
+                        $"Ollama error {(int)response.StatusCode}: {error}");
+                }
+
+                var result =
+                    await response.Content
+                        .ReadFromJsonAsync<OllamaGenerateResponse>();
+
+                return result?.Response ?? string.Empty;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(
+                    $"Attempt {attempt}/{maxRetries} failed");
+
+                Console.WriteLine(ex.Message);
+
+                if (attempt == maxRetries)
+                    throw;
+
+                await Task.Delay(
+                    TimeSpan.FromSeconds(attempt * 2));
+            }
         }
 
-        var result =
-            await response.Content.ReadFromJsonAsync<OllamaGenerateResponse>();
-
-         return result?.Response ?? string.Empty;
+        throw new InvalidOperationException();
     }
 }
