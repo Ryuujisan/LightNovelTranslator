@@ -31,7 +31,7 @@ public class OllamaTranslator : ITranslator
 
         var request = new OllamaGenerateRequest
         {
-            Model = "qwen3:32b",
+            Model = "huihui_ai/Qwen3.6-abliterated:27b",//"qwen3:32b",
             Prompt = prompt,
             Stream = false,
             Think = false,
@@ -47,7 +47,13 @@ public class OllamaTranslator : ITranslator
             "http://localhost:11434/api/generate",
             request);
 
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+
+            throw new HttpRequestException(
+                $"Ollama error {(int)response.StatusCode}: {error}");
+        }
 
         var result =
             await response.Content.ReadFromJsonAsync<OllamaGenerateResponse>();

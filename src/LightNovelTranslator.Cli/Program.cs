@@ -71,13 +71,18 @@ Console.WriteLine($"Chars: {text.Length}");
 Console.WriteLine($"Time: {sw.Elapsed}");
 Console.WriteLine($"Chars/sec: {text.Length / sw.Elapsed.TotalSeconds:F2}");
 Console.WriteLine(translated);*/
-var reader = new DocxDocumentReader();
-var writer = new DocxDocumentWriter();
-var translator = new DocxTranslator();
-var path = Path.Combine(
+var inputPath = Path.Combine(
     Environment.CurrentDirectory,
     "test.docx");
-Console.WriteLine(path);
+var outPath = Path.Combine(
+    Environment.CurrentDirectory,
+    "test_translete.docx");
+
+var reader = new DocxDocumentReader();
+var writer = new DocxDocumentWriter();
+var translator = new DocxTranslator(new OllamaTranslator());
+
+Console.WriteLine(outPath);
 
 var document = await reader.ReadAsync("test.docx");
 
