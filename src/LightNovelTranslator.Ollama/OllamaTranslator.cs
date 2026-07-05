@@ -42,7 +42,9 @@ public class OllamaTranslator : ITranslator
                 RepeatPenalty = 1.0,
             }
         };
-
+        
+        
+        
         var response = await _httpClient.PostAsJsonAsync(
             "http://localhost:11434/api/generate",
             request);

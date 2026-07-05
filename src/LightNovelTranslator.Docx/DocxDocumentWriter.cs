@@ -12,43 +12,49 @@ public sealed class DocxDocumentWriter : IDocumentWriter
         string outputPath,
         DocumentModel document)
     {
-        File.Copy(inputPath, outputPath, overwrite: true);
+        File.Copy(
+            inputPath,
+            outputPath,
+            true);
 
-        using var wordDoc = WordprocessingDocument.Open(outputPath, true);
+        using var wordDoc =
+            WordprocessingDocument.Open(
+                outputPath,
+                true);
 
-        var body = wordDoc.MainDocumentPart!
-            .Document
-            .Body!;
+        var body =
+            wordDoc.MainDocumentPart!
+                .Document
+                .Body!;
 
-        var wordParagraphs = body
-            .Elements<Paragraph>()
-            .ToList();
+        var paragraphs =
+            body.Elements<Paragraph>()
+                .ToList();
 
         foreach (var paragraphModel in document.Paragraphs)
         {
             if (paragraphModel.HasImage)
                 continue;
 
-            if (string.IsNullOrWhiteSpace(paragraphModel.Text))
-                continue;
-            if (paragraphModel.Text.Contains("Table of Contents"))
-                continue;
-
-            if (paragraphModel.Text.Contains("Contents"))
+            if (string.IsNullOrWhiteSpace(
+                    paragraphModel.Text))
                 continue;
 
-            if (paragraphModel.Index < 0 || paragraphModel.Index >= wordParagraphs.Count)
+            if (paragraphModel.Index >= paragraphs.Count)
                 continue;
 
-            var wordParagraph = wordParagraphs[paragraphModel.Index];
+            var paragraph =
+                paragraphs[paragraphModel.Index];
 
             ReplaceParagraphText(
-                wordParagraph,
-                $"[TEXT TRANSLATED: {paragraphModel.Text}]");
+                paragraph,
+                paragraphModel.Text);
         }
 
-        wordDoc.MainDocumentPart.Document.Save();
-
+        wordDoc.MainDocumentPart
+            .Document
+            .Save();
+        
         return Task.CompletedTask;
     }
 

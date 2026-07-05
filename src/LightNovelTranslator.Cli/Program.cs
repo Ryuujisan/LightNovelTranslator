@@ -71,28 +71,24 @@ Console.WriteLine($"Chars: {text.Length}");
 Console.WriteLine($"Time: {sw.Elapsed}");
 Console.WriteLine($"Chars/sec: {text.Length / sw.Elapsed.TotalSeconds:F2}");
 Console.WriteLine(translated);*/
-var inputPath = Path.Combine(
-    Environment.CurrentDirectory,
-    "test.docx");
-var outPath = Path.Combine(
-    Environment.CurrentDirectory,
-    "test_translete.docx");
-
 var reader = new DocxDocumentReader();
+var translator = new DocxTranslator(
+    new OllamaTranslator());
+
 var writer = new DocxDocumentWriter();
-var translator = new DocxTranslator(new OllamaTranslator());
 
-Console.WriteLine(outPath);
+var inputFile = "test.docx";
+var outputFile = "test_translated.docx";
 
-var document = await reader.ReadAsync("test.docx");
+var document =
+    await reader.ReadAsync(inputFile);
+
+var translatedDocument =
+    await translator.TranslateAsync(document);
 
 await writer.WriteAsync(
-    "test.docx",
-    "test_translated.docx",
-    document);
-var translete = await translator.TranslateAsync(document);
-foreach (var p in translete.Paragraphs)
-{
-  Console.WriteLine(p.Text);  
-}
+    inputFile,
+    outputFile,
+    translatedDocument);
+
 Console.WriteLine("Done.");
