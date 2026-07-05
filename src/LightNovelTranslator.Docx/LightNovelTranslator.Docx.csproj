@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LightNovelTranslator.Core\LightNovelTranslator.Core.csproj" />
+    <ProjectReference Include="..\LightNovelTranslator.Ollama\LightNovelTranslator.Ollama.csproj" />
   </ItemGroup>
 
   <ItemGroup>

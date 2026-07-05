@@ -1,8 +1,9 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System.Diagnostics;
+using LightNovelTranslator.Docx;
 using LightNovelTranslator.Ollama;
-
+/*
 var translator = new OllamaTranslator();
 var sw = Stopwatch.StartNew();
 var text = """
@@ -69,4 +70,24 @@ sw.Stop();
 Console.WriteLine($"Chars: {text.Length}");
 Console.WriteLine($"Time: {sw.Elapsed}");
 Console.WriteLine($"Chars/sec: {text.Length / sw.Elapsed.TotalSeconds:F2}");
-Console.WriteLine(translated);
+Console.WriteLine(translated);*/
+var reader = new DocxDocumentReader();
+var writer = new DocxDocumentWriter();
+var translator = new DocxTranslator();
+var path = Path.Combine(
+    Environment.CurrentDirectory,
+    "test.docx");
+Console.WriteLine(path);
+
+var document = await reader.ReadAsync("test.docx");
+
+await writer.WriteAsync(
+    "test.docx",
+    "test_translated.docx",
+    document);
+var translete = await translator.TranslateAsync(document);
+foreach (var p in translete.Paragraphs)
+{
+  Console.WriteLine(p.Text);  
+}
+Console.WriteLine("Done.");
