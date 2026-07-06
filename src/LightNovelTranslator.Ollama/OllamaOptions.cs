@@ -12,4 +12,7 @@ public sealed class OllamaOptions
 
     [JsonPropertyName("repeat_penalty")]
     public double RepeatPenalty { get; set; } = 1.05;
+    
+    [JsonPropertyName("num_ctx")]
+    public int NumCtx { get; set; } = 4096;
 }

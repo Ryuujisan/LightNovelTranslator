@@ -1,8 +1,8 @@
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using LightNovelTranslator.Core.Interfaces;
 using LightNovelTranslator.Core.Models;
 using LightNovelTranslator.Ollama;
-using System.Text.RegularExpressions;
 
 namespace LightNovelTranslator.Docx;
 
@@ -11,25 +11,12 @@ public class DocxTranslator : IDocumentTranslator
     private const string Separator = "<|LNT_PARAGRAPH_BREAK|>";
 
     private readonly ITranslator _translator;
-    
-    private static string NormalizeResponse(
-        string response,
-        string separator)
-    {
-        response = response.Trim();
 
-        while (response.EndsWith(separator))
-        {
-            response = response[..^separator.Length]
-                .Trim();
-        }
-
-        return response;
-    }
     public DocxTranslator(ITranslator translator)
     {
         _translator = translator;
     }
+
     public async Task<DocumentModel> TranslateAsync(DocumentModel document)
     {
         var paragraphs = document.Paragraphs
@@ -53,30 +40,35 @@ public class DocxTranslator : IDocumentTranslator
 
             Console.WriteLine($"Translating chunk {i + 1}/{chunks.Count}");
 
-            var promptText = chunk.OriginalText;
+            var translatedBlock = await _translator.TranslateAsync(chunk.OriginalText);
 
-            var translatedBlock =
-                await _translator.TranslateAsync(promptText);
-           
-            translatedBlock =
-                NormalizeResponse(
-                    translatedBlock,
-                    Separator);
-
+            translatedBlock = NormalizeResponse(translatedBlock, Separator);
             var translatedParagraphs =
                 ParseNumberedParagraphs(translatedBlock);
 
-            if (translatedParagraphs.Count != chunk.Paragraphs.Count)
+            var hasParagraphMismatch =
+                translatedParagraphs.Count != chunk.Paragraphs.Count;
+
+            var hasEnglishLeak =
+                HasEnglishLeak(translatedBlock);
+
+            var isValid =
+                !hasParagraphMismatch && !hasEnglishLeak;
+
+            if (!isValid)
             {
+                SaveFailedChunk(i + 1, chunk.OriginalText, translatedBlock);
+
                 Console.WriteLine(
-                    $"Warning: chunk {i + 1} paragraph count mismatch. " +
-                    $"Expected {chunk.Paragraphs.Count}, got {translatedParagraphs.Count}");
+                    $"Warning: chunk {i + 1} failed validation. " +
+                    $"Expected {chunk.Paragraphs.Count}, got {translatedParagraphs.Count}, " +
+                    $"EnglishLeak={hasEnglishLeak}");
 
                 chunk.Paragraphs[0].Text = translatedBlock;
 
                 for (var j = 1; j < chunk.Paragraphs.Count; j++)
                     chunk.Paragraphs[j].Text = string.Empty;
-                
+
                 continue;
             }
 
@@ -92,7 +84,19 @@ public class DocxTranslator : IDocumentTranslator
 
         return document;
     }
-    
+
+    private static string NormalizeResponse(string response, string separator)
+    {
+        response = response.Trim();
+
+        while (response.EndsWith(separator))
+        {
+            response = response[..^separator.Length].Trim();
+        }
+
+        return response;
+    }
+
     private static List<string> ParseNumberedParagraphs(string text)
     {
         var matches = Regex.Matches(
@@ -103,5 +107,31 @@ public class DocxTranslator : IDocumentTranslator
             .OrderBy(m => int.Parse(m.Groups[1].Value))
             .Select(m => m.Groups[2].Value.Trim())
             .ToList();
+    }
+
+    private static bool HasEnglishLeak(string text)
+    {
+        var matches = Regex.Matches(
+            text,
+            @"\b(don't|doesn't|didn't|what|why|where|when|with|that|this|the|and|for|from|just|sorry|let's|sword|device|pervert|dormitory|bath|underwear|girl|guard|steam|roof|drag-ride|connection|huh|oops)\b",
+            RegexOptions.IgnoreCase);
+
+        return matches.Count >= 8;
+    }
+    
+    private static void SaveFailedChunk(
+        int chunkNumber,
+        string originalText,
+        string translatedText)
+    {
+        Directory.CreateDirectory("debug");
+
+        File.WriteAllText(
+            $"debug/failed_chunk_{chunkNumber}_input.txt",
+            originalText);
+
+        File.WriteAllText(
+            $"debug/failed_chunk_{chunkNumber}_output.txt",
+            translatedText);
     }
 }

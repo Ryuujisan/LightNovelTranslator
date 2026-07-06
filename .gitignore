@@ -49,6 +49,7 @@ translated/
 # Runtime data
 progress.json
 logs/
+debug/
 
 # Test files
 test-files/
@@ -56,3 +57,7 @@ samples/
 
 # Local configuration
 appsettings.Development.json
+
+#document extesion
+*.docx
+*.pdf
