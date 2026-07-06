@@ -30,4 +30,33 @@ public static class Helper
 
         return outputPath;
     }
+    
+    public static string[] GetDocumentsPaths(string inputPath, string extension)
+    {
+        if (string.IsNullOrWhiteSpace(inputPath))
+            return [];
+
+        extension = extension.TrimStart('.');
+
+        if (File.Exists(inputPath))
+        {
+            return Path.GetExtension(inputPath).Equals($".{extension}", StringComparison.OrdinalIgnoreCase)
+                ? [inputPath]
+                : [];
+        }
+
+        if (!Directory.Exists(inputPath))
+            return [];
+
+        return Directory
+            .EnumerateFiles(inputPath, "*", new EnumerationOptions
+            {
+                RecurseSubdirectories = true,
+                IgnoreInaccessible = true
+            })
+            .Where(path =>
+                Path.GetExtension(path).Equals($".{extension}", StringComparison.OrdinalIgnoreCase) &&
+                !Path.GetFileName(path).StartsWith("~$"))
+            .ToArray();
+    }
 }

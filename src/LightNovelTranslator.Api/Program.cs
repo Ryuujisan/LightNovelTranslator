@@ -1,3 +1,4 @@
+using LightNovelTranslator.Api.Services;
 using LightNovelTranslator.Core;
 using LightNovelTranslator.Core.Interfaces;
 using LightNovelTranslator.Docx;
@@ -14,7 +15,10 @@ builder.Services.AddScoped<ITranslator, OllamaTranslator>();
 builder.Services.AddScoped<ITranslationProgressStore, TranslationProgressStore>();
 builder.Services.AddScoped<DocxDocumentReader>();
 builder.Services.AddScoped<DocxDocumentWriter>();
-
+builder.Services.AddHttpClient<OllamaService>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:11434");
+});
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
