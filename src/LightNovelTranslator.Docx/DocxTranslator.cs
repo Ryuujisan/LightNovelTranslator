@@ -11,10 +11,12 @@ public class DocxTranslator : IDocumentTranslator
     private const string Separator = "<|LNT_PARAGRAPH_BREAK|>";
 
     private readonly ITranslator _translator;
+    private readonly ITranslationProgressStore _progressStore;
 
-    public DocxTranslator(ITranslator translator)
+    public DocxTranslator(ITranslator translator, ITranslationProgressStore progressStore)
     {
         _translator = translator;
+        _progressStore = progressStore;
     }
 
     public async Task<DocumentModel> TranslateAsync(DocumentModel document)
@@ -31,13 +33,13 @@ public class DocxTranslator : IDocumentTranslator
             maxChars: 2500);
 
         Console.WriteLine($"Chunks: {chunks.Count}");
-
+        var progress = await _progressStore.CreateAsync("test.docx", "test_translated.docx", "jakis", chunks);
         var sw = Stopwatch.StartNew();
 
         for (var i = 0; i < chunks.Count; i++)
         {
             var chunk = chunks[i];
-
+            
             Console.WriteLine($"Translating chunk {i + 1}/{chunks.Count}");
 
             var translatedBlock = await _translator.TranslateAsync(chunk.OriginalText);
@@ -87,6 +89,16 @@ public class DocxTranslator : IDocumentTranslator
             {
                 chunk.Paragraphs[j].Text = translatedParagraphs[j];
             }
+            
+            progress.Chunks[i].Status =
+                isValid
+                    ? EChunkStatus.Translated
+                    : EChunkStatus.Failed;
+
+            progress.Chunks[i].TranslatedText =
+                translatedBlock;
+
+            await _progressStore.SaveAsync(progress);
         }
 
         sw.Stop();
@@ -144,5 +156,68 @@ public class DocxTranslator : IDocumentTranslator
         File.WriteAllText(
             $"debug/failed_chunk_{chunkNumber}_output.txt",
             translatedText);
+    }
+
+    public async Task<DocumentModel> ResumeAsync(DocumentModel document, TranslationJobProgress progress)
+    {
+        var paragraphs = document.Paragraphs
+            .Where(p => !p.HasImage)
+            .Where(p => !string.IsNullOrWhiteSpace(p.Text))
+            .Where(p => p.Text.Length > 2)
+            .ToList();
+
+        var chunks = DocumentChunker.CreateChunks(
+            paragraphs,
+            maxParagraphs: 12,
+            maxChars: 2500);
+
+        for (var i = 0; i < chunks.Count; i++)
+        {
+            var progressChunk = progress.Chunks[i];
+
+            if (progressChunk.Status == EChunkStatus.Translated)
+            {
+                var cachedParagraphs =
+                    ParseNumberedParagraphs(progressChunk.TranslatedText);
+
+                for (var j = 0; j < chunks[i].Paragraphs.Count; j++)
+                    chunks[i].Paragraphs[j].Text = cachedParagraphs[j];
+
+                continue;
+            }
+
+            Console.WriteLine($"Resuming chunk {i + 1}/{chunks.Count}");
+
+            progressChunk.Status = EChunkStatus.Translating;
+            progressChunk.Attempts++;
+            await _progressStore.SaveAsync(progress);
+
+            var translatedBlock =
+                await _translator.TranslateAsync(progressChunk.OriginalText);
+
+            translatedBlock = NormalizeResponse(translatedBlock, Separator);
+
+            var freshParagraphs =
+                ParseNumberedParagraphs(translatedBlock);
+
+            var isValid =
+                freshParagraphs.Count == chunks[i].Paragraphs.Count &&
+                !HasEnglishLeak(translatedBlock);
+
+            progressChunk.TranslatedText = translatedBlock;
+            progressChunk.Status = isValid
+                ? EChunkStatus.Translated
+                : EChunkStatus.Failed;
+
+            await _progressStore.SaveAsync(progress);
+
+            if (!isValid)
+                continue;
+
+            for (var j = 0; j < chunks[i].Paragraphs.Count; j++)
+                chunks[i].Paragraphs[j].Text = freshParagraphs[j];
+        }
+
+        return document;
     }
 }
