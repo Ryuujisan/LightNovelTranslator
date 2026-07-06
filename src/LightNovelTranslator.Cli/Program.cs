@@ -8,12 +8,14 @@ var inputFile = GetArg(args, "--input") ?? "test.docx";
 var outputFile = GetArg(args, "--output") ?? "test_translated.docx";
 var progressFile = GetArg(args, "--progress") ?? "test_translated.progress.json";
 
+outputFile = Helper.ResolveOutputPath(inputFile, outputFile, "pl");
+Console.WriteLine($"Output: {outputFile}");
 var reader = new DocxDocumentReader();
 var progressStore = new TranslationProgressStore();
 
 var translator = new DocxTranslator(
     new OllamaTranslator(),
-    progressStore);
+    progressStore, inputFile, outputFile);
 
 var writer = new DocxDocumentWriter();
 

@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/LightNovelTranslator.Api/LightNovelTranslator.Api.csproj" />
     <Project Path="src/LightNovelTranslator.App/LightNovelTranslator.App.csproj" />
     <Project Path="src/LightNovelTranslator.Cli/LightNovelTranslator.Cli.csproj" />
     <Project Path="src/LightNovelTranslator.Core/LightNovelTranslator.Core.csproj" />

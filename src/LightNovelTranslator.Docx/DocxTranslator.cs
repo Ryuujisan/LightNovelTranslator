@@ -12,11 +12,15 @@ public class DocxTranslator : IDocumentTranslator
 
     private readonly ITranslator _translator;
     private readonly ITranslationProgressStore _progressStore;
+    private readonly string _inputPath;
+    private readonly string _outputPath;
 
-    public DocxTranslator(ITranslator translator, ITranslationProgressStore progressStore)
+    public DocxTranslator(ITranslator translator, ITranslationProgressStore progressStore, string inputPath, string outputPath)
     {
         _translator = translator;
         _progressStore = progressStore;
+        _inputPath = inputPath;
+        _outputPath = outputPath;
     }
 
     public async Task<DocumentModel> TranslateAsync(DocumentModel document)
@@ -33,7 +37,7 @@ public class DocxTranslator : IDocumentTranslator
             maxChars: 2500);
 
         Console.WriteLine($"Chunks: {chunks.Count}");
-        var progress = await _progressStore.CreateAsync("test.docx", "test_translated.docx", "jakis", chunks);
+        var progress = await _progressStore.CreateAsync(_inputPath, _outputPath, "jakis", chunks);
         var sw = Stopwatch.StartNew();
 
         for (var i = 0; i < chunks.Count; i++)
