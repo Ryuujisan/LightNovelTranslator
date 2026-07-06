@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Prompts\TranslationPrompt.txt" />
+    <EmbeddedResource Include="Prompts\RetryTranslationPrompt.txt" />
   </ItemGroup>
   
   <PropertyGroup>

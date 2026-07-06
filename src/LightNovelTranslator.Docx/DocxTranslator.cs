@@ -57,19 +57,30 @@ public class DocxTranslator : IDocumentTranslator
 
             if (!isValid)
             {
-                SaveFailedChunk(i + 1, chunk.OriginalText, translatedBlock);
-
                 Console.WriteLine(
-                    $"Warning: chunk {i + 1} failed validation. " +
-                    $"Expected {chunk.Paragraphs.Count}, got {translatedParagraphs.Count}, " +
-                    $"EnglishLeak={hasEnglishLeak}");
+                    $"Retrying chunk {i + 1} with repair model...");
 
-                chunk.Paragraphs[0].Text = translatedBlock;
+                translatedBlock =
+                    await _translator.RetryTranslateAsync(chunk);
 
-                for (var j = 1; j < chunk.Paragraphs.Count; j++)
-                    chunk.Paragraphs[j].Text = string.Empty;
+                translatedBlock =
+                    NormalizeResponse(
+                        translatedBlock,
+                        Separator);
 
-                continue;
+                translatedParagraphs =
+                    ParseNumberedParagraphs(
+                        translatedBlock);
+
+                hasParagraphMismatch =
+                    translatedParagraphs.Count != chunk.Paragraphs.Count;
+
+                hasEnglishLeak =
+                    HasEnglishLeak(translatedBlock);
+
+                isValid =
+                    !hasParagraphMismatch &&
+                    !hasEnglishLeak;
             }
 
             for (var j = 0; j < chunk.Paragraphs.Count; j++)
