@@ -1,8 +1,7 @@
 import { Box, Typography, List, ListItem } from "@mui/material";
 import { useDropzone } from "react-dropzone";
 import { useState } from "react";
-import {postResolvePath, postUploadFile} from "./api.ts";
-import {http} from "../../shared/api/http.ts";
+import {postUploadFile} from "./api.ts";
 
 export default function ZoneFile() {
     const [files, setFiles] = useState<File[]>([]);
