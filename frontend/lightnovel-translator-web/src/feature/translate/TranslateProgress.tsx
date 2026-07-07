@@ -5,8 +5,8 @@ import {useTranslationStore} from "../../store/tranlateStore.ts";
 
 export default function TranslateProgress() {
     const translate = useTranslationStore(x => x.isTranslating);
-    const setTranslete = useTranslationStore(x => x.setIsTranslating);
-    const [currentChunk, setCurrentChunk] = useState(50);
+    //const setTranslete = useTranslationStore(x => x.setIsTranslating);
+    const [currentChunk, /*setCurrentChunk*/] = useState(50);
     const maxChunk = 100;
     return (
         <Box
