@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import {Card, CardContent, Typography, Stack, Alert} from "@mui/material";
 import CircleIcon from "@mui/icons-material/Circle";
 import {getStatus} from "./api.ts";
-import {Link} from "react-router-dom";
 
 export default function StatusCard() {
     const [backendOnline, setBackendOnline] = useState(false);
