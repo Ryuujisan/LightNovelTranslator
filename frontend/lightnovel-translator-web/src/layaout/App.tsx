@@ -1,6 +1,6 @@
 import {Navbar} from "./Navbar.tsx";
 import { Outlet } from "react-router-dom";
-import {Box} from "@mui/material";
+import {Box, Stack} from "@mui/material";
 
 
 export default function App() {
@@ -14,8 +14,10 @@ export default function App() {
               py: 4,
             }}
         >
-          <Navbar />
-          <Outlet />
+            <Stack spacing={2}>
+                <Navbar />
+                <Outlet />
+            </Stack>
         </Box>
     )
 }

@@ -13,7 +13,6 @@ export default function StatusCard() {
                 setBackendOnline(true);
 
                 const data = await getStatus();
-                console.log(data);
                 setOllamaOnline(data.installed === true);
             } catch {
                 setBackendOnline(false);
