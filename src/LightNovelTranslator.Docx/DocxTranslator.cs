@@ -15,9 +15,19 @@ public class DocxTranslator : IDocumentTranslator
     private readonly string _inputPath;
     private readonly string _outputPath;
     private ITranslationProgressReporter _progressReporter;
+    private string _model;
+    private string _retryModel;
 
-    public DocxTranslator(ITranslator translator, ITranslationProgressStore progressStore, ITranslationProgressReporter progressReporter, string inputPath, string outputPath)
+    public DocxTranslator(ITranslator translator, 
+        ITranslationProgressStore progressStore, 
+        ITranslationProgressReporter progressReporter, 
+        string inputPath, 
+        string outputPath,
+        string model,
+        string retryModel)
     {
+        _retryModel = retryModel;
+        _model = model;
         _progressReporter = progressReporter;
         _translator = translator;
         _progressStore = progressStore;
@@ -39,7 +49,7 @@ public class DocxTranslator : IDocumentTranslator
             maxChars: 2500);
 
         Console.WriteLine($"Chunks: {chunks.Count}");
-        var progress = await _progressStore.CreateAsync(_inputPath, _outputPath, "jakis", chunks);
+        var progress = await _progressStore.CreateAsync(_inputPath, _outputPath, _model, chunks);
         var sw = Stopwatch.StartNew();
 
         for (var i = 0; i < chunks.Count; i++)
@@ -48,7 +58,7 @@ public class DocxTranslator : IDocumentTranslator
             
             //Console.WriteLine($"Translating chunk {i + 1}/{chunks.Count}");
 
-            var translatedBlock = await _translator.TranslateAsync(chunk.OriginalText);
+            var translatedBlock = await _translator.TranslateAsync(chunk.OriginalText, _model);
 
             translatedBlock = NormalizeResponse(translatedBlock, Separator);
             var translatedParagraphs =
@@ -69,7 +79,7 @@ public class DocxTranslator : IDocumentTranslator
                     $"Retrying chunk {i + 1} with repair model...");
 
                 translatedBlock =
-                    await _translator.RetryTranslateAsync(chunk);
+                    await _translator.RetryTranslateAsync(chunk, _retryModel);
 
                 translatedBlock =
                     NormalizeResponse(
@@ -199,7 +209,7 @@ public class DocxTranslator : IDocumentTranslator
             await _progressStore.SaveAsync(progress);
 
             var translatedBlock =
-                await _translator.TranslateAsync(progressChunk.OriginalText);
+                await _translator.TranslateAsync(progressChunk.OriginalText, _model);
 
             translatedBlock = NormalizeResponse(translatedBlock, Separator);
 

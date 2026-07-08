@@ -4,7 +4,6 @@ import {useTranslationStore} from "../../store/tranlateStore.ts";
 import type {TranslationJobRequest} from "./type.ts";
 import {toast} from "react-toastify";
 import {postTranslate} from "./api.ts";
-//import {useSocketStore} from "../../store/socketStore.ts";
 
 export default function TranslateProgress() {
     const translate = useTranslationStore(x => x.isTranslating);
@@ -13,6 +12,8 @@ export default function TranslateProgress() {
     const outputPath = useTranslationStore(x => x.outputPath);
     const currentChunk = useTranslationStore(x => x.currentChunk);
     const maxChunk = useTranslationStore(x => x.totalChunks);
+    const model = useTranslationStore(x => x.selectedModel)
+    const retryModel = useTranslationStore(x => x.selectedRetryModel)
     //const sendCheckJob = useSocketStore(x => x.);
 
     async function doTranslete() {
@@ -22,7 +23,8 @@ export default function TranslateProgress() {
                 inputPath: file,
                 outputPath: outputPath,
                 language: "Polish",
-                model: "llama3",
+                model: model,
+                retryModel: retryModel,
                 extension: "json",
             }
             sendRequest(data);
@@ -32,8 +34,8 @@ export default function TranslateProgress() {
 
     async function sendRequest(data : TranslationJobRequest) {
         try {
-            const res = await postTranslate(data);
-            toast.success("Translating " + res);
+            await postTranslate(data);
+            toast.success(`Queued: ${data.inputPath.split("/").pop()}`)
         } catch (e) {
             toast.error("Error while translating \n" + e);
             setTranslete(false);

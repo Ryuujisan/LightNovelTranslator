@@ -4,6 +4,7 @@ type TranslationState = {
     fileNames: string[];
     resolvedPaths: string[];
     selectedModel: string;
+    selectedRetryModel: string;
     language: string;
     outputPath: string;
     isTranslating: boolean;
@@ -14,6 +15,7 @@ type TranslationState = {
     setFileNames: (files: string[]) => void;
     setResolvedPaths: (paths: string[]) => void;
     setSelectedModel: (model: string) => void;
+    setSelectedRetryModel: (model: string) => void;
     setLanguage: (language: string) => void;
     setOutputPath: (path: string) => void;
     setProgress: (current: number, total: number) => void;
@@ -24,7 +26,8 @@ type TranslationState = {
 export const useTranslationStore = create<TranslationState>((set) => ({
     fileNames: [],
     resolvedPaths: [],
-    selectedModel: "",
+    selectedModel: "qwen3.5:9b",
+    selectedRetryModel: "huihui_ai/Qwen3.6-abliterated:27b",
     language: "Polish",
     outputPath: "click to select",
     isTranslating: false,
@@ -35,6 +38,7 @@ export const useTranslationStore = create<TranslationState>((set) => ({
     setFileNames: (fileNames) => set({ fileNames }),
     setResolvedPaths: (resolvedPaths) => set({ resolvedPaths }),
     setSelectedModel: (selectedModel) => set({ selectedModel }),
+    setSelectedRetryModel: (selectedRetryModel) => set({ selectedRetryModel }),
     setLanguage: (language) => set({ language }),
     setOutputPath: (outputPath) => set({ outputPath }),
     setProgress: (currentChunk, totalChunks) => set({ currentChunk, totalChunks }),

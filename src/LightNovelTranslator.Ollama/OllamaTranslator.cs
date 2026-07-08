@@ -15,9 +15,9 @@ public class OllamaTranslator : ITranslator
             Timeout = TimeSpan.FromMinutes(30)
         };
     }
-    public async Task<string> TranslateAsync(string text)
+    public async Task<string> TranslateAsync(string text, string model = "qwen3.5:9b")
     {
-        var model =
+        /*var model =
             //"qwen3:32b",
             //"huihui_ai/Qwen3.6-abliterated:27b",
             //"jaahas/gemma-2-9b-it-abliterated",//"",//"",
@@ -37,7 +37,7 @@ public class OllamaTranslator : ITranslator
             // "huihui_ai/qwen3-abliterated:14b",
             // "richardyoung/qwen2.5-14b-1m-heretic",
             //  "richardyoung/qwen2.5-14b-instruct-abliterated",
-           //  "huihui_ai/qwen3.5-abliterated:9b",
+           //  "huihui_ai/qwen3.5-abliterated:9b",*/
            return await TranslateJobAsync(text, "TranslationPrompt", model, new OllamaOptions()
            {
                Temperature = 0.0,
@@ -136,10 +136,10 @@ public class OllamaTranslator : ITranslator
            */
     }
 
-    public async Task<string> RetryTranslateAsync(TranslationChunk chunk)
+    public async Task<string> RetryTranslateAsync(TranslationChunk chunk, string model = "huihui_ai/Qwen3.6-abliterated:27b")
     {
         return await TranslateJobAsync(chunk.OriginalText, "RetryTranslationPrompt",
-            "huihui_ai/Qwen3.6-abliterated:27b", new OllamaOptions()
+            model, new OllamaOptions()
             {
                 Temperature = 0.0,
                 TopP = 1.0,

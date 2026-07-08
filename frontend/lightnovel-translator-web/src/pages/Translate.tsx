@@ -1,6 +1,6 @@
 import {Container, Grid} from "@mui/material";
 import ZoneFile from "../feature/file/ZoneFile.tsx";
-import TranslateOutput from "../feature/translate/TranslateOutput.tsx";
+import {TranslateOutput} from "../feature/translate/TranslateOutput.tsx";
 import TranslateProgress from "../feature/translate/TranslateProgress.tsx";
 
 export default function Translate() {

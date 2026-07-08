@@ -15,7 +15,7 @@ var progressStore = new TranslationProgressStore();
 
 var translator = new DocxTranslator(
     new OllamaTranslator(),
-    progressStore, null, inputFile, outputFile);
+    progressStore, null, inputFile, outputFile, "qwen3.5:9b", "huihui_ai/Qwen3.6-abliterated:27b");
 
 var writer = new DocxDocumentWriter();
 

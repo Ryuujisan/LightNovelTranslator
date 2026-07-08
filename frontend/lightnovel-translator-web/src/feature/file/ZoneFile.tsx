@@ -23,10 +23,11 @@ export default function ZoneFile() {
 
         const data = await postUploadFile(acceptedFiles) as UploadResponse;
 
-        const inputPaths = data.files.map(file =>
-            `${data.inputDir}/${file}`
-        );
-
+        const inputPaths = data.files.map(file => file.path);
+        console.log("data", data);
+        console.log("acceptedFiles", acceptedFiles);
+        console.log("inputFiles", inputPaths);
+        console.log("count", acceptedFiles.length);
         setFileNames(inputPaths);
     }
 

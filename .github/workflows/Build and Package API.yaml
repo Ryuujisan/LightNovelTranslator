@@ -47,3 +47,11 @@ jobs:
           name: api-${{ matrix.runtime }}
           path: dist/*.zip
           if-no-files-found: error
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: dist/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

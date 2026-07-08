@@ -3,5 +3,6 @@ export interface TranslationJobRequest {
     outputPath: string;
     language: string;
     model: string;
+    retryModel: string;
     extension : string;
 }

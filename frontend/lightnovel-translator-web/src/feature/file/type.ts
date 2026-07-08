@@ -1,5 +1,8 @@
 export type UploadResponse = {
     jobId: string;
     inputDir: string;
-    files: string[];
+    files: {
+        fileName: string;
+        path: string;
+    }[];
 };

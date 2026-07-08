@@ -41,7 +41,7 @@ export default function StatusCard() {
                     {!backendOnline && <Alert severity="warning">
                         Local backend is not running.
                         <a
-                            href="https://github.com/Ryuujisan/LightNovelTranslator/releases/tag/API"
+                            href="https://github.com/Ryuujisan/LightNovelTranslator/releases/tag/api"
                             target="_blank"
                         >
                             Download backend

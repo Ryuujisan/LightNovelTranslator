@@ -1,11 +1,12 @@
 using LightNovelTranslator.Core;
 using LightNovelTranslator.Core.Interfaces;
+using LightNovelTranslator.Core.Models;
 using LightNovelTranslator.Docx;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LightNovelTranslator.Api.Controllers;
 
-public class TranslateController(IServiceScopeFactory _scopeFactory) : BaseController
+public class TranslateController(IServiceScopeFactory _scopeFactory, ITranslationQueue _queue) : BaseController
 {
     /*
     private IDocumentReader _reader;
@@ -30,11 +31,18 @@ public class TranslateController(IServiceScopeFactory _scopeFactory) : BaseContr
     [HttpPost("job")]
     public async Task<IActionResult> Translate([FromBody] TranslationJobRequest request)
     {
-        request.OutputPath = Helper.ResolveOutputPath(request.InputPath, request.OutputPath, request.Language);
-        
-        _ = Task.Run(() => ProcessTranslationJob(request.InputPath, request.OutputPath));
+        request.OutputPath = Helper.ResolveOutputPath(
+            request.InputPath,
+            request.OutputPath,
+            request.Language);
 
-        return Accepted(new { status = "猫 started 猫" });
+        await _queue.EnqueueAsync(new TranslationQueueItem(
+            request.InputPath,
+            request.OutputPath,
+            request.Model,
+            request.RetryModel));
+
+        return Accepted(new { status = "猫 queued 猫" });
     }
 
 
@@ -48,7 +56,7 @@ public class TranslateController(IServiceScopeFactory _scopeFactory) : BaseContr
             foreach (var path in dir)
             {
                 var outputPath = Helper.ResolveOutputPath(path, request.OutputPath, request.Language);
-                await ProcessTranslationJob(path, outputPath);
+                await ProcessTranslationJob(path, outputPath, request.Model, request.RetryModel);
                 //Todo rise event for finished translation
             }
         });
@@ -60,7 +68,7 @@ public class TranslateController(IServiceScopeFactory _scopeFactory) : BaseContr
         });
     }
 
-    public async Task ProcessTranslationJob(string inputPath, string outputPath)
+    public async Task ProcessTranslationJob(string inputPath, string outputPath, string model, string retryModel)
     {
         using var scope = _scopeFactory.CreateScope();
 
@@ -75,7 +83,9 @@ public class TranslateController(IServiceScopeFactory _scopeFactory) : BaseContr
             progressStore,
             progressReporter,
             inputPath,
-            outputPath);
+            outputPath,
+            model,
+            retryModel);
         
         var document = await reader.ReadAsync(inputPath);
 
@@ -96,7 +106,8 @@ public class TranslateController(IServiceScopeFactory _scopeFactory) : BaseContr
         public string InputPath { get; set; } = string.Empty;
         public string OutputPath { get; set; } = string.Empty;
         public string Language { get; set; } = "Pl";
-        public string Model { get; set; } = string.Empty;
+        public string Model { get; set; } = "qwen3.5:9b";
+        public string RetryModel { get; set; } = "huihui_ai/Qwen3.6-abliterated:27b";
         public string Extension { get; set; } = string.Empty;
     }
 }

@@ -1,4 +1,5 @@
 import {http} from "../../shared/api/http.ts";
+import axios from "axios";
 
 
 export async function getOutputPath() {
@@ -11,11 +12,20 @@ export async function postResolvePath(fileName: string[]) {
     return response.data;
 }
 
-export async function postUploadFile(file : File[]) {
+
+export async function postUploadFile(files : File[]) {
     const formData = new FormData();
-    file.forEach(f => formData.append("files", f));
-    const response =await http.post("/file/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+
+    files.forEach(file => {
+        formData.append("files", file, file.name);
     });
+
+    const response = await axios.post(
+        "http://localhost:5156/api/file/upload",
+        formData
+    );
+
+    return response.data;
+
     return response.data;
 }

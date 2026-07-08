@@ -16,6 +16,9 @@ builder.Services.AddScoped<ITranslator, OllamaTranslator>();
 builder.Services.AddScoped<ITranslationProgressStore, TranslationProgressStore>();
 builder.Services.AddScoped<IDocumentReader, DocxDocumentReader>();
 builder.Services.AddScoped<IDocumentWriter, DocxDocumentWriter>();
+builder.Services.AddSingleton<ITranslationQueue, TranslationQueue>();
+builder.Services.AddHostedService<TranslationWorker>();
+builder.Services.AddScoped<TranslationJobProcessor>();
 builder.Services.AddScoped<ITranslationProgressReporter, SignalRProgressReporter>();
 builder.Services.AddHttpClient<OllamaService>(client =>
 {

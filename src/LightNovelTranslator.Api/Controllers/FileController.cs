@@ -118,13 +118,18 @@ public class FileController : BaseController
 
         Directory.CreateDirectory(inputDir);
 
+        var savedFiles = new List<string>();
+
         foreach (var file in files)
         {
             var path = Path.Combine(inputDir, file.FileName);
 
             await using var stream = System.IO.File.Create(path);
             await file.CopyToAsync(stream);
+
+            savedFiles.Add(path);
         }
+        
         Console.WriteLine($"Files count: {files.Count} input dir: {inputDir}");
 
         foreach (var file in files)
@@ -135,7 +140,11 @@ public class FileController : BaseController
         {
             jobId,
             inputDir,
-            files = files.Select(f => f.FileName)
+            files = savedFiles.Select(path => new
+            {
+                fileName = Path.GetFileName(path),
+                path
+            })
         });
     }
     
