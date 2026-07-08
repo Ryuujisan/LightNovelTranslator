@@ -17,13 +17,15 @@ public class FileController : BaseController
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // PowerShell na Windowsie ma wbudowany dostęp do systemowych okien dialogowych .NET
-                fileName = "powershell";
-                arguments = "-NoProfile -Command \"" +
-                            "Add-Type -AssemblyName System.Windows.Forms; " +
-                            "$dialog = New-Object System.Windows.Forms.FolderBrowserDialog; " +
-                            "$dialog.Description = 'Wybierz folder zapisu nowelki'; " +
-                            "if($dialog.ShowDialog() -eq 'OK') { Write-Output $dialog.SelectedPath }\"";
+                fileName = "powershell.exe";
+                arguments =
+                    "-NoProfile -STA -Command \"" +
+                    "Add-Type -AssemblyName System.Windows.Forms; " +
+                    "$dialog = New-Object System.Windows.Forms.FolderBrowserDialog; " +
+                    "$dialog.Description = 'Wybierz folder zapisu nowelki'; " +
+                    "if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) { " +
+                    "Write-Output $dialog.SelectedPath " +
+                    "}\"";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
@@ -48,8 +50,9 @@ public class FileController : BaseController
                 FileName = fileName,
                 Arguments = arguments,
                 RedirectStandardOutput = true,
+                RedirectStandardError = true,
                 UseShellExecute = false,
-                CreateNoWindow = true
+                CreateNoWindow = false
             };
 
             using var process = Process.Start(startInfo);
