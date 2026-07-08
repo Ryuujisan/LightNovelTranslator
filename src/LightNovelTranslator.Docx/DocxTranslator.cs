@@ -14,15 +14,17 @@ public class DocxTranslator : IDocumentTranslator
     private readonly ITranslationProgressStore _progressStore;
     private readonly string _inputPath;
     private readonly string _outputPath;
+    private ITranslationProgressReporter _progressReporter;
 
-    public DocxTranslator(ITranslator translator, ITranslationProgressStore progressStore, string inputPath, string outputPath)
+    public DocxTranslator(ITranslator translator, ITranslationProgressStore progressStore, ITranslationProgressReporter progressReporter, string inputPath, string outputPath)
     {
+        _progressReporter = progressReporter;
         _translator = translator;
         _progressStore = progressStore;
         _inputPath = inputPath;
         _outputPath = outputPath;
     }
-
+    
     public async Task<DocumentModel> TranslateAsync(DocumentModel document)
     {
         var paragraphs = document.Paragraphs
@@ -44,7 +46,7 @@ public class DocxTranslator : IDocumentTranslator
         {
             var chunk = chunks[i];
             
-            Console.WriteLine($"Translating chunk {i + 1}/{chunks.Count}");
+            //Console.WriteLine($"Translating chunk {i + 1}/{chunks.Count}");
 
             var translatedBlock = await _translator.TranslateAsync(chunk.OriginalText);
 
@@ -88,7 +90,7 @@ public class DocxTranslator : IDocumentTranslator
                     !hasParagraphMismatch &&
                     !hasEnglishLeak;
             }
-
+            
             for (var j = 0; j < chunk.Paragraphs.Count; j++)
             {
                 chunk.Paragraphs[j].Text = translatedParagraphs[j];
@@ -101,14 +103,14 @@ public class DocxTranslator : IDocumentTranslator
 
             progress.Chunks[i].TranslatedText =
                 translatedBlock;
-
+            await _progressReporter?.ProgressReport(i, chunks.Count, document.FileName);
             await _progressStore.SaveAsync(progress);
         }
 
         sw.Stop();
 
         Console.WriteLine($"Total time: {sw.Elapsed}");
-
+        await _progressReporter.TranslationCompleted(document.FileName);
         return document;
     }
 

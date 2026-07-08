@@ -15,7 +15,7 @@ var progressStore = new TranslationProgressStore();
 
 var translator = new DocxTranslator(
     new OllamaTranslator(),
-    progressStore, inputFile, outputFile);
+    progressStore, null, inputFile, outputFile);
 
 var writer = new DocxDocumentWriter();
 

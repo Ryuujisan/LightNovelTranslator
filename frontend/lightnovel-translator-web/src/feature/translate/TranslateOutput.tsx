@@ -10,7 +10,9 @@ export default function TranslateOutput() {
     /*
     * Myśl na przyszłosc na modeli zrobić zustana lub coś podobnego*/
     const [models, setModels] = useState(["Not Instaled"]);
-    const [outputPath, SetOutputPath] = useState("click to select");
+
+    const outputPath = useTranslationStore(x => x.outputPath);
+    const SetOutputPath = useTranslationStore(x => x.setOutputPath);
     const loading = useTranslationStore(x => x.isLoading);
     const setLoading = useTranslationStore(x => x.setIsLoading);// signir będzie prawdopodbne t aktulizwosć
 

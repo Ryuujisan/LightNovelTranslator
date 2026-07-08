@@ -26,11 +26,11 @@ export const useTranslationStore = create<TranslationState>((set) => ({
     resolvedPaths: [],
     selectedModel: "",
     language: "Polish",
-    outputPath: "",
+    outputPath: "click to select",
     isTranslating: false,
     isLoading: false,
     currentChunk: 0,
-    totalChunks: 0,
+    totalChunks: 1,
 
     setFileNames: (fileNames) => set({ fileNames }),
     setResolvedPaths: (resolvedPaths) => set({ resolvedPaths }),

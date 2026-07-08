@@ -1,3 +1,4 @@
+using LightNovelTranslator.Api.Hubs;
 using LightNovelTranslator.Api.Services;
 using LightNovelTranslator.Core;
 using LightNovelTranslator.Core.Interfaces;
@@ -13,8 +14,9 @@ builder.Services.AddControllers();
 
 builder.Services.AddScoped<ITranslator, OllamaTranslator>();
 builder.Services.AddScoped<ITranslationProgressStore, TranslationProgressStore>();
-builder.Services.AddScoped<DocxDocumentReader>();
-builder.Services.AddScoped<DocxDocumentWriter>();
+builder.Services.AddScoped<IDocumentReader, DocxDocumentReader>();
+builder.Services.AddScoped<IDocumentWriter, DocxDocumentWriter>();
+builder.Services.AddScoped<ITranslationProgressReporter, SignalRProgressReporter>();
 builder.Services.AddHttpClient<OllamaService>(client =>
 {
     client.BaseAddress = new Uri("http://localhost:11434");
@@ -22,15 +24,18 @@ builder.Services.AddHttpClient<OllamaService>(client =>
 builder.Services.AddOpenApi();
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("Frontend", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowAnyHeader();
+            .AllowCredentials();
     });
 });
+builder.Services.AddSignalR();
 var app = builder.Build();
-app.UseCors("AllowAll");
+app.UseCors("Frontend");
+app.MapHub<TranslateHub>("/hubs/translation");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

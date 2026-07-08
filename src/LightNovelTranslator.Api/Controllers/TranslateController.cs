@@ -5,62 +5,90 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LightNovelTranslator.Api.Controllers;
 
-public class TranslateController : BaseController
+public class TranslateController(IServiceScopeFactory _scopeFactory) : BaseController
 {
-    private string _input;
-    private string _output;
-
+    /*
     private IDocumentReader _reader;
     private IDocumentWriter _writer;
     private ITranslationProgressStore _progressStore;
     private ITranslator _translator;
-
-    TranslateController(IDocumentReader reader, 
+    private ITranslationProgressReporter _progressReporter;*/
+/*
+    public TranslateController(IDocumentReader reader, 
         IDocumentWriter writer, 
         ITranslationProgressStore progressStore, 
+        ITranslationProgressReporter progressReporter,
         ITranslator translator)
     {
+        _progressReporter = progressReporter;
         _translator = translator;
         _progressStore = progressStore;
         _writer = writer;
         _reader = reader;
     }
-
-    [HttpPost("translate")]
+*/
+    [HttpPost("job")]
     public async Task<IActionResult> Translate([FromBody] TranslationJobRequest request)
     {
         request.OutputPath = Helper.ResolveOutputPath(request.InputPath, request.OutputPath, request.Language);
         
-        await ProcessTranslationJob(request.InputPath, request.OutputPath);
-        
-        return Ok("OK");
+        _ = Task.Run(() => ProcessTranslationJob(request.InputPath, request.OutputPath));
+
+        return Accepted(new { status = "猫 started 猫" });
     }
 
 
-    [HttpPost("translate-dir")]
+    [HttpPost("job-dir")]
     public async Task<IActionResult> TranslateDir([FromBody] TranslationJobRequest request)
     {
-        var dir = Helper.GetDocumentsPaths(request.InputPath, request.Extession);
-        foreach (var path in dir)
+        var dir = Helper.GetDocumentsPaths(request.InputPath, request.Extension);
+
+        _ = Task.Run(async () =>
         {
-            var outputPath = Helper.ResolveOutputPath(path, request.OutputPath, request.Language);
-            await ProcessTranslationJob(path, outputPath);
-            //Todo rise event for finished translation
-        }
-        return Ok("猫　WiP 猫");
+            foreach (var path in dir)
+            {
+                var outputPath = Helper.ResolveOutputPath(path, request.OutputPath, request.Language);
+                await ProcessTranslationJob(path, outputPath);
+                //Todo rise event for finished translation
+            }
+        });
+        
+        return Accepted(new
+        {
+            status = "猫 started 猫",
+            files = dir.Length
+        });
     }
 
     public async Task ProcessTranslationJob(string inputPath, string outputPath)
     {
+        using var scope = _scopeFactory.CreateScope();
+
+        var reader = scope.ServiceProvider.GetRequiredService<IDocumentReader>();
+        var writer = scope.ServiceProvider.GetRequiredService<IDocumentWriter>();
+        var translator = scope.ServiceProvider.GetRequiredService<ITranslator>();
+        var progressStore = scope.ServiceProvider.GetRequiredService<ITranslationProgressStore>();
+        var progressReporter = scope.ServiceProvider.GetRequiredService<ITranslationProgressReporter>();
+        
         var docTranslate = new DocxTranslator(
-            _translator,
-            _progressStore,
+            translator,
+            progressStore,
+            progressReporter,
             inputPath,
             outputPath);
         
-        var document = await _reader.ReadAsync(inputPath);
-        var translatedDocument = await docTranslate.TranslateAsync(document);
-        await _writer.WriteAsync(inputPath, outputPath, translatedDocument);
+        var document = await reader.ReadAsync(inputPath);
+
+        try
+        {
+            var translatedDocument = await docTranslate.TranslateAsync(document);
+            await writer.WriteAsync(inputPath, outputPath, translatedDocument);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await progressReporter.TranslationError(document.FileName, e.Message);
+        }
     }
     
     public sealed class TranslationJobRequest
@@ -69,6 +97,6 @@ public class TranslateController : BaseController
         public string OutputPath { get; set; } = string.Empty;
         public string Language { get; set; } = "Pl";
         public string Model { get; set; } = string.Empty;
-        public string Extession { get; set; } = string.Empty;
+        public string Extension { get; set; } = string.Empty;
     }
 }

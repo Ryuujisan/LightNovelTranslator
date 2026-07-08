@@ -109,7 +109,12 @@ public class FileController : BaseController
     public async Task<IActionResult> Upload([FromForm] List<IFormFile> files)
     {
         var jobId = Guid.NewGuid().ToString("N");
-        var inputDir = Path.Combine("jobs", jobId, "input");
+        var inputDir = Path.Combine(
+            Path.GetTempPath(),
+            "LightNovelTranslator",
+            "jobs",
+            jobId,
+            "input");
 
         Directory.CreateDirectory(inputDir);
 
@@ -120,7 +125,12 @@ public class FileController : BaseController
             await using var stream = System.IO.File.Create(path);
             await file.CopyToAsync(stream);
         }
+        Console.WriteLine($"Files count: {files.Count} input dir: {inputDir}");
 
+        foreach (var file in files)
+        {
+            Console.WriteLine($"File: {file.FileName}, Length: {file.Length}");
+        }
         return Ok(new
         {
             jobId,

@@ -1,13 +1,45 @@
 import {Box, Button, LinearProgress, Stack, Typography} from "@mui/material";
 import TranslateIcon from '@mui/icons-material/Translate';
-import {useState} from "react";
 import {useTranslationStore} from "../../store/tranlateStore.ts";
+import type {TranslationJobRequest} from "./type.ts";
+import {toast} from "react-toastify";
+import {postTranslate} from "./api.ts";
+//import {useSocketStore} from "../../store/socketStore.ts";
 
 export default function TranslateProgress() {
     const translate = useTranslationStore(x => x.isTranslating);
-    //const setTranslete = useTranslationStore(x => x.setIsTranslating);
-    const [currentChunk, /*setCurrentChunk*/] = useState(50);
-    const maxChunk = 100;
+    const setTranslete = useTranslationStore(x => x.setIsTranslating);
+    const file = useTranslationStore(x => x.fileNames)
+    const outputPath = useTranslationStore(x => x.outputPath);
+    const currentChunk = useTranslationStore(x => x.currentChunk);
+    const maxChunk = useTranslationStore(x => x.totalChunks);
+    //const sendCheckJob = useSocketStore(x => x.);
+
+    async function doTranslete() {
+        setTranslete(true);
+        file.forEach((file) => {
+            const data : TranslationJobRequest = {
+                inputPath: file,
+                outputPath: outputPath,
+                language: "Polish",
+                model: "llama3",
+                extension: "json",
+            }
+            sendRequest(data);
+
+        })
+    }
+
+    async function sendRequest(data : TranslationJobRequest) {
+        try {
+            const res = await postTranslate(data);
+            toast.success("Translating " + res);
+        } catch (e) {
+            toast.error("Error while translating \n" + e);
+            setTranslete(false);
+        }
+    }
+
     return (
         <Box
             component="fieldset" // <--- To zmienia tag HTML na fieldset!
@@ -30,7 +62,7 @@ export default function TranslateProgress() {
             <Typography component="legend">Progress</Typography>
 
             <Stack spacing={1}>
-                <Button variant="outlined" startIcon={<TranslateIcon />} loading={translate}>
+                <Button variant="outlined" startIcon={<TranslateIcon />} loading={translate} onClick={doTranslete}>
                     Translete...
                 </Button>
                 <Typography

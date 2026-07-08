@@ -1,9 +1,17 @@
 import {Navbar} from "./Navbar.tsx";
 import { Outlet } from "react-router-dom";
 import {Box, Stack} from "@mui/material";
+import {useEffect} from "react";
+import {useSocketStore} from "../store/socketStore.ts";
 
 
 export default function App() {
+    const initSignalR = useSocketStore(state => state.initSignalR);
+
+    useEffect(() => {
+        initSignalR();
+    }, [initSignalR]);
+
     return (
         <Box
             sx={{

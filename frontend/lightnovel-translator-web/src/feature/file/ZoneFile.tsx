@@ -2,10 +2,12 @@ import { Box, Typography, List, ListItem } from "@mui/material";
 import { useDropzone } from "react-dropzone";
 import { useState } from "react";
 import {postUploadFile} from "./api.ts";
+import {useTranslationStore} from "../../store/tranlateStore.ts";
+import type {UploadResponse} from "./type.ts";
 
 export default function ZoneFile() {
     const [files, setFiles] = useState<File[]>([]);
-
+    const setFileNames = useTranslationStore(x => x.setFileNames);
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         accept: {
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
@@ -13,14 +15,19 @@ export default function ZoneFile() {
         multiple: true,
         onDrop: acceptedFiles => {
             setFiles(acceptedFiles);
-            resolvePath();
+            resolvePath(acceptedFiles);
         },
     });
 
-    async function resolvePath() {
+    async function resolvePath(acceptedFiles : File[]) {
 
-        const data = await postUploadFile(files);
-        console.log(data);
+        const data = await postUploadFile(acceptedFiles) as UploadResponse;
+
+        const inputPaths = data.files.map(file =>
+            `${data.inputDir}/${file}`
+        );
+
+        setFileNames(inputPaths);
     }
 
     return (
