@@ -4,4 +4,5 @@ namespace LightNovelTranslator.Api.Hubs;
 
 public class TranslateHub : Hub
 {
+    
 }

@@ -4,6 +4,7 @@ using LightNovelTranslator.Core;
 using LightNovelTranslator.Core.Interfaces;
 using LightNovelTranslator.Docx;
 using LightNovelTranslator.Ollama;
+using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +12,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 1024L * 1024L * 1024L; // 1 GB
+    options.ValueLengthLimit = int.MaxValue;
+    options.MultipartHeadersLengthLimit = int.MaxValue;
+});
 builder.Services.AddScoped<ITranslator, OllamaTranslator>();
 builder.Services.AddScoped<ITranslationProgressStore, TranslationProgressStore>();
 builder.Services.AddScoped<IDocumentReader, DocxDocumentReader>();

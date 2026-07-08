@@ -105,6 +105,8 @@ public class FileController : BaseController
         return Ok(results);
     }
     
+    
+    [DisableRequestSizeLimit]
     [HttpPost("upload")]
     public async Task<IActionResult> Upload([FromForm] List<IFormFile> files)
     {
