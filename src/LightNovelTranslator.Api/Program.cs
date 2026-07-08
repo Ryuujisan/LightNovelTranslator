@@ -35,9 +35,6 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddSignalR();
 var app = builder.Build();
-app.UseCors("Frontend");
-app.MapHub<TranslateHub>("/hubs/translation");
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -45,10 +42,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseRouting();
+
+app.UseCors("Frontend");
+
 app.UseAuthorization();
 
-
-
 app.MapControllers();
+app.MapHub<TranslateHub>("/hubs/translation");
 
 app.Run();
