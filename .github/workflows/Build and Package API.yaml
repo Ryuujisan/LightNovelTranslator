@@ -5,11 +5,14 @@ on:
     tags:
       - 'api*'
 
+# Nadanie uprawnień do tworzenia i edycji wydań oraz wrzucania plików binarnych
+permissions:
+  contents: write
+
 jobs:
-  publish-api:
-    name: Publish for -r ${{ matrix.runtime }}
+  build-api:
+    name: Build for -r ${{ matrix.runtime }}
     runs-on: ubuntu-latest
-    
     strategy:
       matrix:
         runtime:
@@ -47,11 +50,28 @@ jobs:
           name: api-${{ matrix.runtime }}
           path: dist/*.zip
           if-no-files-found: error
+
+  publish-release:
+    name: Create or Update GitHub Release
+    needs: build-api # Czeka na zakończenie wszystkich 4 kompilacji z matrycy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all-artifacts
+          pattern: api-*
+          merge-multiple: true
+
       - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          files: dist/*.zip
+          files: all-artifacts/*.zip
+          generate_release_notes: true # Edytuje/generuje treść notatki z commitów, jeśli jej nie ma
+          fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
