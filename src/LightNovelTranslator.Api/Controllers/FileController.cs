@@ -21,11 +21,18 @@ public class FileController : BaseController
                 arguments =
                     "-NoProfile -STA -Command \"" +
                     "Add-Type -AssemblyName System.Windows.Forms; " +
+                    "$form = New-Object System.Windows.Forms.Form; " +
+                    "$form.TopMost = $true; " +
+                    "$form.WindowState = 'Minimized'; " +
+                    "$form.ShowInTaskbar = $false; " +
+                    "$form.Show(); " +
+                    "$form.Activate(); " +
                     "$dialog = New-Object System.Windows.Forms.FolderBrowserDialog; " +
                     "$dialog.Description = 'Wybierz folder zapisu nowelki'; " +
-                    "if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) { " +
+                    "if ($dialog.ShowDialog($form) -eq [System.Windows.Forms.DialogResult]::OK) { " +
                     "Write-Output $dialog.SelectedPath " +
-                    "}\"";
+                    "} " +
+                    "$form.Close();\"";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
