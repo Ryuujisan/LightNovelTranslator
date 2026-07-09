@@ -63,7 +63,13 @@ public class FileController : BaseController
 
             string selectedPath = process.StandardOutput.ReadToEnd().Trim();
             process.WaitForExit();
+            
+            var error = process.StandardError.ReadToEnd().Trim();
 
+            if (process.ExitCode != 0)
+            {
+                return StatusCode(500, error);
+            }
             // Specyficzny fix dla macOS (w przypadku kliknięcia Anuluj/Cancel AppleScript rzuca błąd na standard error)
             if (process.ExitCode != 0 || string.IsNullOrEmpty(selectedPath) || selectedPath.Contains("User canceled"))
             {
