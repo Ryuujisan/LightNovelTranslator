@@ -5,5 +5,6 @@ public sealed record TranslationQueueItem(
     string InputPath,
     string OutputPath,
     string Model,
-    string RetryModel
+    string RetryModel,
+    string Language
 );

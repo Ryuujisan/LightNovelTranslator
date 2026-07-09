@@ -30,7 +30,8 @@ public sealed class TranslationJobProcessor
             job.InputPath,
             job.OutputPath,
             job.Model,
-            job.RetryModel);
+            job.RetryModel,
+            job.Language);
 
         var document = await reader.ReadAsync(job.InputPath);
 

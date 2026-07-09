@@ -7,7 +7,6 @@ namespace LightNovelTranslator.Api.Services;
 public sealed class SignalRProgressReporter : ITranslationProgressReporter
 {
     private IHubContext<TranslateHub> _hub;
-    private IDocumentTranslator _translator;
 
     public SignalRProgressReporter(IHubContext<TranslateHub> hub)
     {

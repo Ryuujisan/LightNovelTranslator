@@ -17,6 +17,7 @@ public class DocxTranslator : IDocumentTranslator
     private ITranslationProgressReporter _progressReporter;
     private string _model;
     private string _retryModel;
+    private string _language;
 
     public DocxTranslator(ITranslator translator, 
         ITranslationProgressStore progressStore, 
@@ -24,8 +25,10 @@ public class DocxTranslator : IDocumentTranslator
         string inputPath, 
         string outputPath,
         string model,
-        string retryModel)
+        string retryModel,
+        string language = "Polish")
     {
+        _language = language;
         _retryModel = retryModel;
         _model = model;
         _progressReporter = progressReporter;
@@ -51,14 +54,14 @@ public class DocxTranslator : IDocumentTranslator
         Console.WriteLine($"Chunks: {chunks.Count}");
         var progress = await _progressStore.CreateAsync(_inputPath, _outputPath, _model, chunks);
         var sw = Stopwatch.StartNew();
-
+        await _progressReporter?.ProgressReport(0, chunks.Count, document.FileName);
         for (var i = 0; i < chunks.Count; i++)
         {
             var chunk = chunks[i];
             
             //Console.WriteLine($"Translating chunk {i + 1}/{chunks.Count}");
 
-            var translatedBlock = await _translator.TranslateAsync(chunk.OriginalText, _model);
+            var translatedBlock = await _translator.TranslateAsync(chunk.OriginalText, _language, _model);
 
             translatedBlock = NormalizeResponse(translatedBlock, Separator);
             var translatedParagraphs =
@@ -67,8 +70,13 @@ public class DocxTranslator : IDocumentTranslator
             var hasParagraphMismatch =
                 translatedParagraphs.Count != chunk.Paragraphs.Count;
 
-            var hasEnglishLeak =
-                HasEnglishLeak(translatedBlock);
+            var hasEnglishLeak = false;
+            bool needsValidation = !_language.Equals("English", StringComparison.OrdinalIgnoreCase);
+
+            if (needsValidation)
+            {
+                hasEnglishLeak = HasEnglishLeak(translatedBlock);
+            }
 
             var isValid =
                 !hasParagraphMismatch && !hasEnglishLeak;
@@ -79,7 +87,7 @@ public class DocxTranslator : IDocumentTranslator
                     $"Retrying chunk {i + 1} with repair model...");
 
                 translatedBlock =
-                    await _translator.RetryTranslateAsync(chunk, _retryModel);
+                    await _translator.RetryTranslateAsync(chunk, _language, _retryModel);
 
                 translatedBlock =
                     NormalizeResponse(
@@ -209,7 +217,7 @@ public class DocxTranslator : IDocumentTranslator
             await _progressStore.SaveAsync(progress);
 
             var translatedBlock =
-                await _translator.TranslateAsync(progressChunk.OriginalText, _model);
+                await _translator.TranslateAsync(progressChunk.OriginalText, _language, _model);
 
             translatedBlock = NormalizeResponse(translatedBlock, Separator);
 

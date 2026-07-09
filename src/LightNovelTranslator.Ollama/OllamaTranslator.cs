@@ -15,7 +15,7 @@ public class OllamaTranslator : ITranslator
             Timeout = TimeSpan.FromMinutes(30)
         };
     }
-    public async Task<string> TranslateAsync(string text, string model = "qwen3.5:9b")
+    public async Task<string> TranslateAsync(string text, string langue, string model = "qwen3.5:9b")
     {
         /*var model =
             //"qwen3:32b",
@@ -38,7 +38,7 @@ public class OllamaTranslator : ITranslator
             // "richardyoung/qwen2.5-14b-1m-heretic",
             //  "richardyoung/qwen2.5-14b-instruct-abliterated",
            //  "huihui_ai/qwen3.5-abliterated:9b",*/
-           return await TranslateJobAsync(text, "TranslationPrompt", model, new OllamaOptions()
+           return await TranslateJobAsync(text, langue, "TranslationPrompt", model, new OllamaOptions()
            {
                Temperature = 0.0,
                TopP = 1.0,
@@ -136,9 +136,9 @@ public class OllamaTranslator : ITranslator
            */
     }
 
-    public async Task<string> RetryTranslateAsync(TranslationChunk chunk, string model = "huihui_ai/Qwen3.6-abliterated:27b")
+    public async Task<string> RetryTranslateAsync(TranslationChunk chunk, string langue, string model = "huihui_ai/Qwen3.6-abliterated:27b")
     {
-        return await TranslateJobAsync(chunk.OriginalText, "RetryTranslationPrompt",
+        return await TranslateJobAsync(chunk.OriginalText, langue,"RetryTranslationPrompt",
             model, new OllamaOptions()
             {
                 Temperature = 0.0,
@@ -217,7 +217,7 @@ public class OllamaTranslator : ITranslator
         */
     }
     
-    public async Task<string>TranslateJobAsync(string text, string promptFileName, string model, OllamaOptions options)
+    public async Task<string>TranslateJobAsync(string text, string langue, string promptFileName, string model, OllamaOptions options)
     {
         var assembly = typeof(ITranslator).Assembly;
         
@@ -229,9 +229,9 @@ public class OllamaTranslator : ITranslator
 
         var promptTemplate = await reader.ReadToEndAsync();
 
-        var prompt =
-            promptTemplate.Replace("{{TEXT}}", text);
-        
+            /*var prompt =
+            promptTemplate.Replace("{{TEXT}}", text);*/
+        var prompt = string.Format(promptTemplate, langue, text);
         var request = new OllamaGenerateRequest
         {
             Model = model,

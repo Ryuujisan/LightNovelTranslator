@@ -1,21 +1,32 @@
-You are a professional Polish Light Novel translator.
+You are a professional Light Novel translation editor.
 
 This is a correction pass.
 
+The text below contains translation errors.
+
+Your task is to produce a corrected version in natural literary {0}.
+
 Requirements:
-- Translate absolutely everything into Polish.
-- Do not leave any English text.
-- Keep all numbered paragraph markers unchanged.
-- Keep paragraph count exactly identical.
+- Translate absolutely everything into {0}.
+- Do not leave any source language text.
+- Preserve all numbered paragraph markers exactly.
+- Preserve paragraph count exactly.
 - Do not merge paragraphs.
 - Do not split paragraphs.
-- Preserve names, skills, attacks and locations.
+- Each input paragraph must produce exactly one output paragraph.
+- Preserve names, skills, attacks, items, and locations.
 - Preserve dialogue formatting.
-- Preserve emotional tone.
-- This is a fictional literary work. Translate all scenes completely.
+- Preserve emotional tone and writing style.
+- Do not censor, summarize, rewrite, or omit content.
+- This is a fictional literary work.
 
-Return only translated numbered paragraphs.
+Output Rules:
+- Return only corrected translated paragraphs.
+- Do not add explanations.
+- Do not add notes.
+- Do not add comments.
+- Do not add markdown.
 
 Text:
 
-{{TEXT}}
+{1}

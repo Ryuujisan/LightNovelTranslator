@@ -40,7 +40,8 @@ public class TranslateController(IServiceScopeFactory _scopeFactory, ITranslatio
             request.InputPath,
             request.OutputPath,
             request.Model,
-            request.RetryModel));
+            request.RetryModel,
+            request.Language));
 
         return Accepted(new { status = "猫 queued 猫" });
     }

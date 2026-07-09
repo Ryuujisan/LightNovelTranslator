@@ -14,6 +14,7 @@ export default function TranslateProgress() {
     const maxChunk = useTranslationStore(x => x.totalChunks);
     const model = useTranslationStore(x => x.selectedModel)
     const retryModel = useTranslationStore(x => x.selectedRetryModel)
+    const language = useTranslationStore(x => x.language);
     //const sendCheckJob = useSocketStore(x => x.);
 
     async function doTranslete() {
@@ -22,7 +23,7 @@ export default function TranslateProgress() {
             const data : TranslationJobRequest = {
                 inputPath: file,
                 outputPath: outputPath,
-                language: "Polish",
+                language: language,
                 model: model,
                 retryModel: retryModel,
                 extension: "json",

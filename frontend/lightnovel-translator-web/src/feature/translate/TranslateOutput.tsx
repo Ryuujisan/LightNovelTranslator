@@ -30,7 +30,9 @@ export function TranslateOutput() {
 
     const setSelectedModel = useTranslationStore(x => x.setSelectedModel);
     const setSelectedRetryModel = useTranslationStore(x => x.setSelectedRetryModel);
-    const languages = ["Polish", "English",];
+    const selectedLangue = useTranslationStore(x => x.language)
+    const setSelectedLangue = useTranslationStore(x => x.setLanguage);
+    const languages = ["Polish", "English", "Japanese"];
     useEffect(() => {
         async function fetchModels() {
             try {
@@ -100,9 +102,10 @@ For best results choose a model that is equal or more capable than the primary m
                 <Typography>Languages:</Typography>
                 <Autocomplete
                     disablePortal
+                    onChange={(_, value) => setSelectedLangue(value ?? "")}
                     options={languages}
                     sx={{width: 300}}
-                    renderInput={(params) => <TextField {...params} label={languages[0]}/>}
+                    renderInput={(params) => <TextField {...params} label={selectedLangue}/>}
                 />
                 <Typography>Output Path:</Typography>
                 <Button variant="outlined" loading={loading} onClick={selectPathOnClick}>{outputPath}</Button>
