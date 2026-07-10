@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using LightNovelTranslator.Core;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,6 +9,21 @@ namespace LightNovelTranslator.Api.Controllers;
 
 public class FileController : BaseController
 {
+    const string TEMP_FOLDER = "LightNovelTranslator";
+    const string INPUT_FOLDER = "input";
+    const string OUTPUT_FOLDER = "output";
+    const string JOBS_FOLDER = "jobs";
+    const string JOB_FILE = "job.json";
+
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true,
+        Converters =
+        {
+            new JsonStringEnumConverter()
+        }
+    };
+
     [HttpGet("output")]
     public IActionResult GetOutput()
     {
@@ -124,18 +141,28 @@ public class FileController : BaseController
     
     [DisableRequestSizeLimit]
     [HttpPost("upload")]
-    public async Task<IActionResult> Upload([FromForm] List<IFormFile> files)
+    public async Task<IActionResult> Upload([FromForm] List<IFormFile> files, [FromForm] string? jobId)
     {
-        var jobId = Guid.NewGuid().ToString("N");
+        jobId ??= Guid.NewGuid().ToString("N");
+        
         var inputDir = Path.Combine(
             Path.GetTempPath(),
-            "LightNovelTranslator",
-            "jobs",
+            TEMP_FOLDER,
+            JOBS_FOLDER,
             jobId,
-            "input");
+            INPUT_FOLDER);
 
         Directory.CreateDirectory(inputDir);
 
+        GetJobJson(jobId, out var job);
+        
+        if (string.IsNullOrWhiteSpace(job.Name) && files.Count > 0)
+        {
+            job.Name = Path.GetFileNameWithoutExtension(files[0].FileName)
+                .Replace("_", " ");
+        }
+        
+        
         var savedFiles = new List<string>();
 
         foreach (var file in files)
@@ -147,6 +174,21 @@ public class FileController : BaseController
 
             savedFiles.Add(path);
         }
+
+        var newFiles = savedFiles
+            .Select(path => new JobFile
+            {
+                FileName = Path.GetFileName(path),
+                Path = path,
+                Status = EStatus.Pending
+            });
+        
+        job.InputPath = job.InputPath
+            .Concat(newFiles)
+            .DistinctBy(x => x.Path, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        
+        SaveJobJson(jobId, job);
         
         Console.WriteLine($"Files count: {files.Count} input dir: {inputDir}");
 
@@ -154,6 +196,9 @@ public class FileController : BaseController
         {
             Console.WriteLine($"File: {file.FileName}, Length: {file.Length}");
         }
+        
+        SaveJobJson(jobId, job);
+        
         return Ok(new
         {
             jobId,
@@ -164,6 +209,53 @@ public class FileController : BaseController
                 path
             })
         });
+    }
+
+
+    private void GetJobJson(string jobId, out Job job)
+    {
+        var jobPath = GetJobJsonPath(jobId);
+        var jobDir = Path.GetDirectoryName(jobPath);
+
+        if (!string.IsNullOrWhiteSpace(jobDir))
+            Directory.CreateDirectory(jobDir);
+
+        if (!System.IO.File.Exists(jobPath))
+        {
+            job = new Job
+            {
+                Id = jobId,
+            };
+
+            SaveJobJson(jobId, job);
+            return;
+        }
+
+        var json = System.IO.File.ReadAllText(jobPath);
+        job = JsonSerializer.Deserialize<Job>(json, JsonOptions)
+              ?? throw new InvalidOperationException($"Nie udało się wczytać pliku job JSON: {jobPath}");
+    }
+
+    private void SaveJobJson(string jobId, Job job)
+    {
+        var jobPath = GetJobJsonPath(jobId);
+        var jobDir = Path.GetDirectoryName(jobPath);
+
+        if (!string.IsNullOrWhiteSpace(jobDir))
+            Directory.CreateDirectory(jobDir);
+
+        var json = JsonSerializer.Serialize(job, JsonOptions);
+        System.IO.File.WriteAllText(jobPath, json);
+    }
+
+    private  string GetJobJsonPath(string jobId)
+    {
+        return Path.Combine(
+            Path.GetTempPath(),
+            TEMP_FOLDER,
+            JOBS_FOLDER,
+            jobId,
+            JOB_FILE);
     }
     
     public sealed class FileName
@@ -177,4 +269,3 @@ public class FileController : BaseController
         public string Path { get; set; } = string.Empty;
     }
 }
-

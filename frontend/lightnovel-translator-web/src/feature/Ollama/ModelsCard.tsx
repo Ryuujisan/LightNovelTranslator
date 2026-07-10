@@ -10,6 +10,11 @@ export default function ModelsCard() {
         async function fetchModels() {
             try {
                 const data = await getModels();
+                if(data.length === 0) {
+                    setModels(["Not Instaled"]);
+                } else {
+                    setModels(data);
+                }
                 setModels(data);
             } catch {
                 setModels(["Not Instaled"]);

@@ -41,7 +41,8 @@ public class TranslateController(IServiceScopeFactory _scopeFactory, ITranslatio
             request.OutputPath,
             request.Model,
             request.RetryModel,
-            request.Language));
+            request.Language,
+            ETranslationJobTypes.Start));
 
         return Accepted(new { status = "猫 queued 猫" });
     }

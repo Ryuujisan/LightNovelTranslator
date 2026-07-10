@@ -5,29 +5,22 @@ import {
     AccordionSummary,
     Autocomplete,
     Box,
-    Button,
+
     Stack,
     TextField,
     Tooltip,
     Typography
 } from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import {getOutputPath} from "../file/api.ts";
 import {useTranslationStore} from "../../store/tranlateStore.ts";
 import InfoIcon from '@mui/icons-material/Info';
+import OutputButton from "./componets/OutputButton.tsx";
 
 
 
 export function TranslateOutput() {
-    /*
-    * Myśl na przyszłosc na modeli zrobić zustana lub coś podobnego*/
+
     const [models, setModels] = useState(["Not Instaled"]);
-
-    const outputPath = useTranslationStore(x => x.outputPath);
-    const SetOutputPath = useTranslationStore(x => x.setOutputPath);
-    const loading = useTranslationStore(x => x.isLoading);
-    const setLoading = useTranslationStore(x => x.setIsLoading);// signir będzie prawdopodbne t aktulizwosć
-
     const setSelectedModel = useTranslationStore(x => x.setSelectedModel);
     const setSelectedRetryModel = useTranslationStore(x => x.setSelectedRetryModel);
     const selectedLangue = useTranslationStore(x => x.language)
@@ -46,17 +39,6 @@ export function TranslateOutput() {
         fetchModels();
     }, [])
 
-    async function selectPathOnClick() {
-        setLoading(true);
-        try {
-            const data = await getOutputPath();
-            SetOutputPath(data.path);
-            setLoading(false);
-        } catch (e) {
-            console.log(e);
-            setLoading(false);
-        }
-    }
 
     return (
         <Accordion>
@@ -107,8 +89,7 @@ For best results choose a model that is equal or more capable than the primary m
                     sx={{width: 300}}
                     renderInput={(params) => <TextField {...params} label={selectedLangue}/>}
                 />
-                <Typography>Output Path:</Typography>
-                <Button variant="outlined" loading={loading} onClick={selectPathOnClick}>{outputPath}</Button>
+                <OutputButton />
             </Stack>
         </Accordion>
 

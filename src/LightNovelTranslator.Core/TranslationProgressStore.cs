@@ -21,6 +21,8 @@ public sealed class TranslationProgressStore : ITranslationProgressStore
         string inputPath,
         string outputPath,
         string model,
+        string retryModel,
+        string language,
         IReadOnlyList<TranslationChunk> chunks)
     {
         var jobProgress = new TranslationJobProgress
@@ -28,7 +30,9 @@ public sealed class TranslationProgressStore : ITranslationProgressStore
             InputPath = inputPath,
             OutputPath = outputPath,
             Model = model,
-            ProgressPath = GetProgressPath(outputPath)
+            RetryModel = retryModel,
+            Language = language,
+            ProgressPath = GetProgressPath(inputPath)
         };
 
         for (var i = 0; i < chunks.Count; i++)
@@ -64,8 +68,8 @@ public sealed class TranslationProgressStore : ITranslationProgressStore
                ?? throw new InvalidOperationException("Nie udało się wczytać progress JSON.");
     }
 
-    private static string GetProgressPath(string outputPath)
+    public static string GetProgressPath(string inputPath)
     {
-        return Path.ChangeExtension(outputPath, ".progress.json");
+        return Path.ChangeExtension(inputPath, ".progress.json");
     }
 }

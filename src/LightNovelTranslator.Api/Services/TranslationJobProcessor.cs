@@ -1,3 +1,4 @@
+using LightNovelTranslator.Core;
 using LightNovelTranslator.Core.Interfaces;
 using LightNovelTranslator.Core.Models;
 using LightNovelTranslator.Docx;
@@ -34,10 +35,23 @@ public sealed class TranslationJobProcessor
             job.Language);
 
         var document = await reader.ReadAsync(job.InputPath);
-
+        
         try
         {
-            var translatedDocument = await docTranslate.TranslateAsync(document);
+            DocumentModel translatedDocument = default;
+            switch (job.jobType)
+            {
+                case ETranslationJobTypes.Start :
+                    translatedDocument = await docTranslate.TranslateAsync(document);
+                    break;
+                case ETranslationJobTypes.Resume:
+                {
+                    var progress = await progressStore.LoadAsync(TranslationProgressStore.GetProgressPath(job.InputPath));
+                    translatedDocument = await docTranslate.ResumeAsync(document, progress);
+                    break;
+                }
+            }
+           // var translatedDocument = await docTranslate.TranslateAsync(document);
             await writer.WriteAsync(job.InputPath, job.OutputPath, translatedDocument);
         }
         catch (Exception e)

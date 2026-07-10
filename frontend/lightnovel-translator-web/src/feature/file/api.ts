@@ -13,8 +13,12 @@ export async function postResolvePath(fileName: string[]) {
 }
 
 
-export async function postUploadFile(files : File[]) {
+export async function postUploadFile(files : File[], jobId?: string) {
     const formData = new FormData();
+
+    if(jobId){
+        formData.append("jobId", jobId);
+    }
 
     files.forEach(file => {
         formData.append("files", file, file.name);
@@ -24,8 +28,6 @@ export async function postUploadFile(files : File[]) {
         "http://localhost:5156/api/file/upload",
         formData
     );
-
-    return response.data;
 
     return response.data;
 }

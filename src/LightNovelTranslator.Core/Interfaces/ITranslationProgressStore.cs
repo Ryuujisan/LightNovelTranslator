@@ -8,6 +8,8 @@ public interface ITranslationProgressStore
         string inputPath,
         string outputPath,
         string model,
+        string retryModel,
+        string language,
         IReadOnlyList<TranslationChunk> chunks);
 
     Task SaveAsync(TranslationJobProgress progress);

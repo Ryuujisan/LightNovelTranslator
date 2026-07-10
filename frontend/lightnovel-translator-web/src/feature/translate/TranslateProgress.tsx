@@ -1,9 +1,10 @@
-import {Box, Button, LinearProgress, Stack, Typography} from "@mui/material";
+import {Box, Button, Stack, Typography} from "@mui/material";
 import TranslateIcon from '@mui/icons-material/Translate';
 import {useTranslationStore} from "../../store/tranlateStore.ts";
 import type {TranslationJobRequest} from "./type.ts";
 import {toast} from "react-toastify";
 import {postTranslate} from "./api.ts";
+import LinearChunkProgress from "./componets/LinearChunkProgress.tsx";
 
 export default function TranslateProgress() {
     const translate = useTranslationStore(x => x.isTranslating);
@@ -75,19 +76,7 @@ export default function TranslateProgress() {
                 >
                     Translate status
                 </Typography>
-                <Box sx={{ width: '100%', mr: 1 }}>
-                <LinearProgress
-                    variant="determinate"
-                    aria-labelledby= "translete"
-                    aria-valuetext= "Translating"
-                    min= {1}
-                    max={maxChunk}
-                    value={currentChunk}
-                />
-                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        chunk {currentChunk} / {maxChunk}
-                    </Typography>
-                </Box>
+                <LinearChunkProgress current={currentChunk} total = {maxChunk} title={""}/>
             </Stack>
         </Box>
     )

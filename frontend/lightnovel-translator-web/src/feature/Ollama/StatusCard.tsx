@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import {Card, CardContent, Typography, Stack, Alert} from "@mui/material";
 import CircleIcon from "@mui/icons-material/Circle";
 import {getStatus} from "./api.ts";
+import {getLatestApiReleaseUrl} from "../../shared/api/releaseUrl.ts";
 
 export default function StatusCard() {
     const [backendOnline, setBackendOnline] = useState(false);
     const [ollamaOnline, setOllamaOnline] = useState(false);
-
+    const [apiUrl, setApiUrl] = useState("");
     useEffect(() => {
         async function loadStatus() {
             try {
@@ -19,7 +20,15 @@ export default function StatusCard() {
                 setOllamaOnline(false);
             }
         }
-
+        async function getReleaseUrl() {
+            try {
+                const url = await getLatestApiReleaseUrl()
+                setApiUrl(url);
+            } catch {
+                setApiUrl("https://api.github.com/repos/Ryuujisan/LightNovelTranslator/releases");
+            }
+        }
+        getReleaseUrl();
         loadStatus();
     }, []);
 
@@ -41,7 +50,7 @@ export default function StatusCard() {
                     {!backendOnline && <Alert severity="warning">
                         Local backend is not running.
                         <a
-                            href="https://github.com/Ryuujisan/LightNovelTranslator/releases/tag/api"
+                            href = {apiUrl}
                             target="_blank"
                         >
                             Download backend

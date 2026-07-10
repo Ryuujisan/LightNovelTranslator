@@ -13,7 +13,9 @@ public sealed class TranslationJobProgress
     public string InputPath { get; set; } = string.Empty;
     public string OutputPath { get; set; } = string.Empty;
     public string Model { get; set; } = string.Empty;
+    public string RetryModel { get; set; } = string.Empty;
     public string ProgressPath { get; set; } = string.Empty;
+    public string Language { get; set; } = string.Empty;
     public List<TranslationChunkResult> Chunks { get; set; } = [];
 }
 

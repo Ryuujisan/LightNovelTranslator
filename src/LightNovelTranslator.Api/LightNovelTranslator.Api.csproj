@@ -16,5 +16,5 @@
     <ProjectReference Include="..\LightNovelTranslator.Docx\LightNovelTranslator.Docx.csproj" />
     <ProjectReference Include="..\LightNovelTranslator.Ollama\LightNovelTranslator.Ollama.csproj" />
   </ItemGroup>
-
+  
 </Project>

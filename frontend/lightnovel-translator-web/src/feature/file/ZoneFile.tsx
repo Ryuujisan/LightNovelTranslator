@@ -5,9 +5,14 @@ import {postUploadFile} from "./api.ts";
 import {useTranslationStore} from "../../store/tranlateStore.ts";
 import type {UploadResponse} from "./type.ts";
 
-export default function ZoneFile() {
+type ZoneFileProps = {
+    jobId?: string;
+    onUploaded?: () => void;
+};
+export default function ZoneFile({ jobId, onUploaded }: ZoneFileProps) {
     const [files, setFiles] = useState<File[]>([]);
     const setFileNames = useTranslationStore(x => x.setFileNames);
+
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         accept: {
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
@@ -21,7 +26,7 @@ export default function ZoneFile() {
 
     async function resolvePath(acceptedFiles : File[]) {
 
-        const data = await postUploadFile(acceptedFiles) as UploadResponse;
+        const data = await postUploadFile(acceptedFiles, jobId) as UploadResponse;
 
         const inputPaths = data.files.map(file => file.path);
         console.log("data", data);
@@ -29,6 +34,7 @@ export default function ZoneFile() {
         console.log("inputFiles", inputPaths);
         console.log("count", acceptedFiles.length);
         setFileNames(inputPaths);
+        onUploaded?.();
     }
 
     return (
